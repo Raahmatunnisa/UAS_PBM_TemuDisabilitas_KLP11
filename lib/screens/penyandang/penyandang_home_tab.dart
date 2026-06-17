@@ -60,7 +60,10 @@ class _PenyandangHomeTabState extends State<PenyandangHomeTab> {
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             tooltip: 'Notifikasi',
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.notifikasi).then((_) => _loadData()),
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.notifikasi,
+            ).then((_) => _loadData()),
           ),
         ],
       ),
@@ -73,7 +76,9 @@ class _PenyandangHomeTabState extends State<PenyandangHomeTab> {
                 children: [
                   Text(
                     'Halo, ${user.nama}!',
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text('Semoga hari Anda menyenangkan'),
@@ -84,13 +89,20 @@ class _PenyandangHomeTabState extends State<PenyandangHomeTab> {
                     child: Card(
                       color: theme.colorScheme.primaryContainer,
                       child: InkWell(
-                        onTap: () => Navigator.pushNamed(context, AppRoutes.buatPermintaan).then((_) => _loadData()),
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.buatPermintaan,
+                        ).then((_) => _loadData()),
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Row(
                             children: [
-                              Icon(Icons.search, size: 40, color: theme.colorScheme.primary),
+                              Icon(
+                                Icons.search,
+                                size: 40,
+                                color: theme.colorScheme.primary,
+                              ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
@@ -98,13 +110,19 @@ class _PenyandangHomeTabState extends State<PenyandangHomeTab> {
                                   children: [
                                     Text(
                                       'Cari Pendamping',
-                                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                                      style: theme.textTheme.titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
                                     Text('Buat permintaan pendampingan baru'),
                                   ],
                                 ),
                               ),
-                              Icon(Icons.arrow_forward_ios, color: theme.colorScheme.primary),
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                color: theme.colorScheme.primary,
+                              ),
                             ],
                           ),
                         ),
@@ -112,14 +130,20 @@ class _PenyandangHomeTabState extends State<PenyandangHomeTab> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _sectionTitle(context, 'Jadwal Pendampingan Terdekat', Icons.event),
+                  _sectionTitle(
+                    context,
+                    'Jadwal Pendampingan Terdekat',
+                    Icons.event,
+                  ),
                   if (_upcoming.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text('Belum ada jadwal pendampingan'),
                     )
                   else
-                    ..._upcoming.take(3).map(
+                    ..._upcoming
+                        .take(3)
+                        .map(
                           (p) => PendampinganCard(
                             pendampingan: p,
                             onTap: () => Navigator.pushNamed(
@@ -130,7 +154,11 @@ class _PenyandangHomeTabState extends State<PenyandangHomeTab> {
                           ),
                         ),
                   const SizedBox(height: 24),
-                  _sectionTitle(context, 'Notifikasi Terbaru', Icons.notifications),
+                  _sectionTitle(
+                    context,
+                    'Notifikasi Terbaru',
+                    Icons.notifications,
+                  ),
                   if (_notifikasi.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
@@ -140,7 +168,8 @@ class _PenyandangHomeTabState extends State<PenyandangHomeTab> {
                     ..._notifikasi.map(
                       (n) => NotifikasiCard(
                         notifikasi: n,
-                        onTap: () => Navigator.pushNamed(context, AppRoutes.notifikasi),
+                        onTap: () =>
+                            Navigator.pushNamed(context, AppRoutes.notifikasi),
                       ),
                     ),
                   const SizedBox(height: 24),
@@ -154,7 +183,11 @@ class _PenyandangHomeTabState extends State<PenyandangHomeTab> {
                     ..._forum.map(
                       (f) => ForumPostCard(
                         post: f,
-                        onTap: () => Navigator.pushNamed(context, AppRoutes.detailForum, arguments: f.id),
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.detailForum,
+                          arguments: f.id,
+                        ),
                       ),
                     ),
                   const SizedBox(height: 16),
@@ -169,7 +202,12 @@ class _PenyandangHomeTabState extends State<PenyandangHomeTab> {
       children: [
         Icon(icon, size: 22),
         const SizedBox(width: 8),
-        Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }

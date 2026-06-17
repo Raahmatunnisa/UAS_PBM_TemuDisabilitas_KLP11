@@ -53,17 +53,28 @@ class PendampinganProvider extends ChangeNotifier {
   }
 
   Future<void> loadUpcoming(int userId, {bool isRelawan = false}) async {
-    _upcomingList = await _db.getUpcomingPendampingan(userId, isRelawan: isRelawan);
+    _upcomingList = await _db.getUpcomingPendampingan(
+      userId,
+      isRelawan: isRelawan,
+    );
     notifyListeners();
   }
 
   Future<void> loadCompleted(int userId, {bool isRelawan = false}) async {
-    _completedList = await _db.getCompletedPendampingan(userId, isRelawan: isRelawan);
+    _completedList = await _db.getCompletedPendampingan(
+      userId,
+      isRelawan: isRelawan,
+    );
     notifyListeners();
   }
 
   Future<List<PendampinganModel>> getPendingRequests(int relawanId) async {
     return _db.getPendingRequestsForRelawan(relawanId);
+  }
+
+  // ← TAMBAHAN BARU
+  Future<List<PendampinganModel>> getOpenRequests() async {
+    return _db.getAllOpenRequests();
   }
 
   Future<int> countCompleted(int relawanId) async {
@@ -94,12 +105,14 @@ class PendampinganProvider extends ChangeNotifier {
     );
     final id = await _db.insertPendampingan(data);
 
-    await _db.insertNotifikasi(NotifikasiModel(
-      userId: userId,
-      judul: 'Permintaan Dibuat',
-      isi: 'Permintaan pendampingan "$jenisBantuan" berhasil dibuat.',
-      createdAt: DateHelper.nowIso(),
-    ));
+    await _db.insertNotifikasi(
+      NotifikasiModel(
+        userId: userId,
+        judul: 'Permintaan Dibuat',
+        isi: 'Permintaan pendampingan "$jenisBantuan" berhasil dibuat.',
+        createdAt: DateHelper.nowIso(),
+      ),
+    );
 
     await _scheduleReminder(id, jenisBantuan, tanggal, waktu);
     notifyListeners();
@@ -116,11 +129,9 @@ class PendampinganProvider extends ChangeNotifier {
     for (final r in relawan) {
       final avg = await _db.getAverageRating(r.id!);
       final count = await _db.getRatingCount(r.id!);
-      withRating.add(RelawanWithRating(
-        relawan: r,
-        averageRating: avg,
-        ratingCount: count,
-      ));
+      withRating.add(
+        RelawanWithRating(relawan: r, averageRating: avg, ratingCount: count),
+      );
     }
 
     withRating.sort((a, b) => b.averageRating.compareTo(a.averageRating));
@@ -144,12 +155,15 @@ class PendampinganProvider extends ChangeNotifier {
     );
     await _db.updatePendampingan(updated);
 
-    await _db.insertNotifikasi(NotifikasiModel(
-      userId: relawanId,
-      judul: 'Permintaan Pendampingan Baru',
-      isi: 'Anda dipilih untuk pendampingan "$jenisBantuan". Silakan konfirmasi.',
-      createdAt: DateHelper.nowIso(),
-    ));
+    await _db.insertNotifikasi(
+      NotifikasiModel(
+        userId: relawanId,
+        judul: 'Permintaan Pendampingan Baru',
+        isi:
+            'Anda dipilih untuk pendampingan "$jenisBantuan". Silakan konfirmasi.',
+        createdAt: DateHelper.nowIso(),
+      ),
+    );
 
     await _notificationService.showNotification(
       id: relawanId + pendampinganId,
@@ -169,17 +183,21 @@ class PendampinganProvider extends ChangeNotifier {
     final existing = await _db.getPendampinganById(pendampinganId);
     if (existing == null) return false;
 
-    final status = diterima ? AppConstants.statusDiterima : AppConstants.statusDitolak;
+    final status = diterima
+        ? AppConstants.statusDiterima
+        : AppConstants.statusDitolak;
     await _db.updatePendampingan(existing.copyWith(status: status));
 
-    await _db.insertNotifikasi(NotifikasiModel(
-      userId: existing.userId,
-      judul: diterima ? 'Permintaan Diterima' : 'Permintaan Ditolak',
-      isi: diterima
-          ? 'Relawan telah menerima permintaan pendampingan Anda.'
-          : 'Relawan menolak permintaan pendampingan Anda.',
-      createdAt: DateHelper.nowIso(),
-    ));
+    await _db.insertNotifikasi(
+      NotifikasiModel(
+        userId: existing.userId,
+        judul: diterima ? 'Permintaan Diterima' : 'Permintaan Ditolak',
+        isi: diterima
+            ? 'Relawan telah menerima permintaan pendampingan Anda.'
+            : 'Relawan menolak permintaan pendampingan Anda.',
+        createdAt: DateHelper.nowIso(),
+      ),
+    );
 
     if (diterima) {
       await _scheduleReminder(
@@ -198,7 +216,9 @@ class PendampinganProvider extends ChangeNotifier {
     final existing = await _db.getPendampinganById(pendampinganId);
     if (existing == null) return false;
 
-    await _db.updatePendampingan(existing.copyWith(status: AppConstants.statusSelesai));
+    await _db.updatePendampingan(
+      existing.copyWith(status: AppConstants.statusSelesai),
+    );
     notifyListeners();
     return true;
   }
@@ -225,7 +245,12 @@ class PendampinganProvider extends ChangeNotifier {
     return _db.hasRated(userId, relawanId);
   }
 
-  Future<void> _scheduleReminder(int id, String jenis, String tanggal, String waktu) async {
+  Future<void> _scheduleReminder(
+    int id,
+    String jenis,
+    String tanggal,
+    String waktu,
+  ) async {
     final dateTime = DateHelper.parseDateTime(tanggal, waktu);
     if (dateTime == null) return;
 

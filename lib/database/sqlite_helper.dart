@@ -24,11 +24,7 @@ class SQLiteHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+    return openDatabase(path, version: 1, onCreate: _createDB);
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -146,11 +142,7 @@ class SQLiteHelper {
 
   Future<UserModel?> getUserById(int id) async {
     final db = await database;
-    final maps = await db.query(
-      'users',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    final maps = await db.query('users', where: 'id = ?', whereArgs: [id]);
     if (maps.isEmpty) return null;
     return UserModel.fromMap(maps.first);
   }
@@ -172,14 +164,16 @@ class SQLiteHelper {
 
   Future<List<UserModel>> getRelawanByKeahlian(String jenisBantuan) async {
     final db = await database;
+
+    if (jenisBantuan.isEmpty) {
+      return getAllRelawan();
+    }
+
     final maps = await db.query(
       'users',
-      where: 'role = ? AND (keahlian LIKE ? OR keahlian LIKE ?)',
-      whereArgs: [
-        AppConstants.roleRelawan,
-        '%$jenisBantuan%',
-        '%Lainnya%',
-      ],
+      where:
+          'role = ? AND (keahlian LIKE ? OR keahlian LIKE ? OR keahlian IS NULL)',
+      whereArgs: [AppConstants.roleRelawan, '%$jenisBantuan%', '%Lainnya%'],
     );
     return maps.map(UserModel.fromMap).toList();
   }
@@ -233,7 +227,9 @@ class SQLiteHelper {
     return maps.map(PendampinganModel.fromMap).toList();
   }
 
-  Future<List<PendampinganModel>> getPendampinganByRelawanId(int relawanId) async {
+  Future<List<PendampinganModel>> getPendampinganByRelawanId(
+    int relawanId,
+  ) async {
     final db = await database;
     final maps = await db.query(
       'pendampingan',
@@ -244,7 +240,9 @@ class SQLiteHelper {
     return maps.map(PendampinganModel.fromMap).toList();
   }
 
-  Future<List<PendampinganModel>> getPendingRequestsForRelawan(int relawanId) async {
+  Future<List<PendampinganModel>> getPendingRequestsForRelawan(
+    int relawanId,
+  ) async {
     final db = await database;
     final maps = await db.query(
       'pendampingan',
@@ -255,7 +253,22 @@ class SQLiteHelper {
     return maps.map(PendampinganModel.fromMap).toList();
   }
 
-  Future<List<PendampinganModel>> getUpcomingPendampingan(int userId, {bool isRelawan = false}) async {
+  // ← TAMBAHAN BARU
+  Future<List<PendampinganModel>> getAllOpenRequests() async {
+    final db = await database;
+    final maps = await db.query(
+      'pendampingan',
+      where: 'status = ?',
+      orderBy: 'createdAt DESC',
+      whereArgs: [AppConstants.statusMenunggu],
+    );
+    return maps.map(PendampinganModel.fromMap).toList();
+  }
+
+  Future<List<PendampinganModel>> getUpcomingPendampingan(
+    int userId, {
+    bool isRelawan = false,
+  }) async {
     final db = await database;
     final today = DateTime.now().toIso8601String().substring(0, 10);
     final column = isRelawan ? 'relawanId' : 'userId';
@@ -273,7 +286,10 @@ class SQLiteHelper {
     return maps.map(PendampinganModel.fromMap).toList();
   }
 
-  Future<List<PendampinganModel>> getCompletedPendampingan(int userId, {bool isRelawan = false}) async {
+  Future<List<PendampinganModel>> getCompletedPendampingan(
+    int userId, {
+    bool isRelawan = false,
+  }) async {
     final db = await database;
     final column = isRelawan ? 'relawanId' : 'userId';
     final maps = await db.query(
@@ -320,7 +336,8 @@ class SQLiteHelper {
 
   Future<List<ForumModel>> getAllForum(int currentUserId) async {
     final db = await database;
-    final maps = await db.rawQuery('''
+    final maps = await db.rawQuery(
+      '''
       SELECT f.*, u.nama as namaUser, u.fotoProfil as fotoProfil,
         (SELECT COUNT(*) FROM likes l WHERE l.forumId = f.id) as likeCount,
         (SELECT COUNT(*) FROM komentar k WHERE k.forumId = f.id) as commentCount,
@@ -328,13 +345,19 @@ class SQLiteHelper {
       FROM forum f
       JOIN users u ON f.userId = u.id
       ORDER BY f.createdAt DESC
-    ''', [currentUserId]);
+    ''',
+      [currentUserId],
+    );
     return maps.map(ForumModel.fromMap).toList();
   }
 
-  Future<List<ForumModel>> getLatestForum(int currentUserId, {int limit = 3}) async {
+  Future<List<ForumModel>> getLatestForum(
+    int currentUserId, {
+    int limit = 3,
+  }) async {
     final db = await database;
-    final maps = await db.rawQuery('''
+    final maps = await db.rawQuery(
+      '''
       SELECT f.*, u.nama as namaUser, u.fotoProfil as fotoProfil,
         (SELECT COUNT(*) FROM likes l WHERE l.forumId = f.id) as likeCount,
         (SELECT COUNT(*) FROM komentar k WHERE k.forumId = f.id) as commentCount,
@@ -343,13 +366,16 @@ class SQLiteHelper {
       JOIN users u ON f.userId = u.id
       ORDER BY f.createdAt DESC
       LIMIT ?
-    ''', [currentUserId, limit]);
+    ''',
+      [currentUserId, limit],
+    );
     return maps.map(ForumModel.fromMap).toList();
   }
 
   Future<ForumModel?> getForumById(int id, int currentUserId) async {
     final db = await database;
-    final maps = await db.rawQuery('''
+    final maps = await db.rawQuery(
+      '''
       SELECT f.*, u.nama as namaUser, u.fotoProfil as fotoProfil,
         (SELECT COUNT(*) FROM likes l WHERE l.forumId = f.id) as likeCount,
         (SELECT COUNT(*) FROM komentar k WHERE k.forumId = f.id) as commentCount,
@@ -357,7 +383,9 @@ class SQLiteHelper {
       FROM forum f
       JOIN users u ON f.userId = u.id
       WHERE f.id = ?
-    ''', [currentUserId, id]);
+    ''',
+      [currentUserId, id],
+    );
     if (maps.isEmpty) return null;
     return ForumModel.fromMap(maps.first);
   }
@@ -371,13 +399,16 @@ class SQLiteHelper {
 
   Future<List<KomentarModel>> getKomentarByForumId(int forumId) async {
     final db = await database;
-    final maps = await db.rawQuery('''
+    final maps = await db.rawQuery(
+      '''
       SELECT k.*, u.nama as namaUser, u.fotoProfil as fotoProfil
       FROM komentar k
       JOIN users u ON k.userId = u.id
       WHERE k.forumId = ?
       ORDER BY k.createdAt ASC
-    ''', [forumId]);
+    ''',
+      [forumId],
+    );
     return maps.map(KomentarModel.fromMap).toList();
   }
 
@@ -432,13 +463,16 @@ class SQLiteHelper {
 
   Future<List<RatingModel>> getRatingsByRelawanId(int relawanId) async {
     final db = await database;
-    final maps = await db.rawQuery('''
+    final maps = await db.rawQuery(
+      '''
       SELECT r.*, u.nama as namaUser
       FROM rating r
       JOIN users u ON r.userId = u.id
       WHERE r.relawanId = ?
       ORDER BY r.createdAt DESC
-    ''', [relawanId]);
+    ''',
+      [relawanId],
+    );
     return maps.map(RatingModel.fromMap).toList();
   }
 
@@ -470,7 +504,10 @@ class SQLiteHelper {
     return maps.map(NotifikasiModel.fromMap).toList();
   }
 
-  Future<List<NotifikasiModel>> getLatestNotifikasi(int userId, {int limit = 3}) async {
+  Future<List<NotifikasiModel>> getLatestNotifikasi(
+    int userId, {
+    int limit = 3,
+  }) async {
     final db = await database;
     final maps = await db.query(
       'notifikasi',

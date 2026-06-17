@@ -32,7 +32,8 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
   Future<void> _loadData() async {
     setState(() => _loading = true);
     final provider = context.read<PendampinganProvider>();
-    _pending = await provider.getPendingRequests(widget.relawanId);
+    _pending = await provider
+        .getOpenRequests(); // ← diubah dari getPendingRequests
     await provider.loadUpcoming(widget.relawanId, isRelawan: true);
     _upcoming = provider.upcomingList;
     _totalSelesai = await provider.countCompleted(widget.relawanId);
@@ -42,14 +43,20 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
 
   Future<void> _konfirmasi(PendampinganModel p, bool diterima) async {
     final provider = context.read<PendampinganProvider>();
-    await provider.konfirmasiPermintaan(
-      pendampinganId: p.id!,
-      userId: widget.relawanId,
-      diterima: diterima,
-    );
+
+    if (diterima) {
+      // Relawan assign dirinya sendiri ke permintaan ini
+      await provider.pilihRelawan(
+        pendampinganId: p.id!,
+        relawanId: widget.relawanId,
+        userId: p.userId,
+        jenisBantuan: p.jenisBantuan,
+      );
+    }
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(diterima ? 'Permintaan diterima' : 'Permintaan ditolak')),
+        SnackBar(content: Text(diterima ? 'Permintaan diterima' : 'Dilewati')),
       );
       _loadData();
     }
@@ -79,7 +86,9 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
                 children: [
                   Text(
                     'Halo, ${user.nama}!',
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -106,7 +115,9 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
                   const SizedBox(height: 24),
                   Text(
                     'Permintaan Masuk',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   if (_pending.isEmpty)
                     const Padding(
@@ -127,7 +138,7 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () => _konfirmasi(p, false),
-                                child: const Text('Tolak'),
+                                child: const Text('Lewati'),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -144,7 +155,9 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
                   const SizedBox(height: 24),
                   Text(
                     'Jadwal Pendampingan',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   if (_upcoming.isEmpty)
                     const Padding(
@@ -152,7 +165,9 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
                       child: Text('Belum ada jadwal'),
                     )
                   else
-                    ..._upcoming.take(5).map(
+                    ..._upcoming
+                        .take(5)
+                        .map(
                           (p) => PendampinganCard(
                             pendampingan: p,
                             onTap: () => Navigator.pushNamed(
@@ -168,7 +183,12 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
     );
   }
 
-  Widget _statCard(BuildContext context, String title, String value, IconData icon) {
+  Widget _statCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+  ) {
     final theme = Theme.of(context);
     return Card(
       child: Padding(
@@ -177,8 +197,17 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
           children: [
             Icon(icon, color: theme.colorScheme.primary, size: 32),
             const SizedBox(height: 8),
-            Text(value, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-            Text(title, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+            Text(
+              value,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall,
+            ),
           ],
         ),
       ),

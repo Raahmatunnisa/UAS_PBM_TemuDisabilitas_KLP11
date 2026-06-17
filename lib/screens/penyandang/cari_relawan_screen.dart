@@ -43,9 +43,9 @@ class _CariRelawanScreenState extends State<CariRelawanScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Relawan berhasil dipilih')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Relawan berhasil dipilih')));
       Navigator.pushNamedAndRemoveUntil(
         context,
         AppRoutes.penyandangMain,
@@ -63,38 +63,46 @@ class _CariRelawanScreenState extends State<CariRelawanScreen> {
       body: provider.isLoading
           ? const LoadingWidget(message: 'Mencari relawan...')
           : provider.relawanList.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.person_search, size: 64),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Belum ada relawan dengan keahlian "${widget.jenisBantuan}"',
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        FilledButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Kembali'),
-                        ),
-                      ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.person_search, size: 64),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Belum ada relawan dengan keahlian "${widget.jenisBantuan}"',
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: provider.relawanList.length,
-                  itemBuilder: (_, index) {
-                    final data = provider.relawanList[index];
-                    return RelawanCard(
-                      data: data,
-                      onPilih: () => _pilihRelawan(data.relawan.id!),
-                    );
-                  },
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: () => context
+                          .read<PendampinganProvider>()
+                          .searchRelawan(''),
+                      icon: const Icon(Icons.group),
+                      label: const Text('Cari Semua Relawan'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Kembali'),
+                    ),
+                  ],
                 ),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: provider.relawanList.length,
+              itemBuilder: (_, index) {
+                final data = provider.relawanList[index];
+                return RelawanCard(
+                  data: data,
+                  onPilih: () => _pilihRelawan(data.relawan.id!),
+                );
+              },
+            ),
     );
   }
 }
