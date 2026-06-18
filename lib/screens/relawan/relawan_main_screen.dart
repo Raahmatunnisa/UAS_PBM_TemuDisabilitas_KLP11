@@ -17,6 +17,9 @@ class RelawanMainScreen extends StatefulWidget {
 class _RelawanMainScreenState extends State<RelawanMainScreen> {
   int _currentIndex = 0;
 
+  static const _primaryColor = Color(0xFF0F6E56);
+  static const _primaryLight = Color(0xFFE1F5EE);
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
@@ -31,15 +34,52 @@ class _RelawanMainScreenState extends State<RelawanMainScreen> {
 
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) => setState(() => _currentIndex = index),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.calendar_month_outlined), selectedIcon: Icon(Icons.calendar_month), label: 'Jadwal'),
-          NavigationDestination(icon: Icon(Icons.forum_outlined), selectedIcon: Icon(Icons.forum), label: 'Forum'),
-          NavigationDestination(icon: Icon(Icons.person_outlined), selectedIcon: Icon(Icons.person), label: 'Profil'),
-        ],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Color(0xFFEEEEEE), width: 0.5)),
+        ),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) =>
+              setState(() => _currentIndex = index),
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          indicatorColor: _primaryLight,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined, color: Color(0xFF888888)),
+              selectedIcon: Icon(Icons.home_rounded, color: _primaryColor),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(
+                Icons.calendar_month_outlined,
+                color: Color(0xFF888888),
+              ),
+              selectedIcon: Icon(
+                Icons.calendar_month_rounded,
+                color: _primaryColor,
+              ),
+              label: 'Jadwal',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.forum_outlined, color: Color(0xFF888888)),
+              selectedIcon: Icon(Icons.forum_rounded, color: _primaryColor),
+              label: 'Forum',
+            ),
+            NavigationDestination(
+              icon: Icon(
+                Icons.person_outline_rounded,
+                color: Color(0xFF888888),
+              ),
+              selectedIcon: Icon(Icons.person_rounded, color: _primaryColor),
+              label: 'Profil',
+            ),
+          ],
+        ),
       ),
     );
   }

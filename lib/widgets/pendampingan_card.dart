@@ -16,87 +16,168 @@ class PendampinganCard extends StatelessWidget {
     this.trailing,
   });
 
-  Color _statusColor(BuildContext context, String status) {
-    final scheme = Theme.of(context).colorScheme;
-    if (status.contains('Selesai')) return Colors.green;
-    if (status.contains('Diterima')) return scheme.primary;
-    if (status.contains('Ditolak')) return scheme.error;
-    if (status.contains('Dipilih')) return Colors.orange;
-    return scheme.outline;
+  static const _primaryColor = Color(0xFF0F6E56);
+
+  Color _statusColor(String status) {
+    if (status.contains('Selesai')) return const Color(0xFF0F6E56);
+    if (status.contains('Diterima')) return const Color(0xFF185FA5);
+    if (status.contains('Ditolak')) return const Color(0xFFD32F2F);
+    if (status.contains('Dipilih')) return const Color(0xFFBA7517);
+    return const Color(0xFF888888);
+  }
+
+  Color _statusBgColor(String status) {
+    if (status.contains('Selesai')) return const Color(0xFFE1F5EE);
+    if (status.contains('Diterima')) return const Color(0xFFE6F1FB);
+    if (status.contains('Ditolak')) return const Color(0xFFFFEBEB);
+    if (status.contains('Dipilih')) return const Color(0xFFFAEEDA);
+    return const Color(0xFFF0F0F0);
+  }
+
+  IconData _jenisBantuanIcon(String jenis) {
+    if (jenis.contains('Publik')) return Icons.account_balance_rounded;
+    if (jenis.contains('Pendidikan')) return Icons.school_rounded;
+    if (jenis.contains('Transportasi')) return Icons.directions_car_rounded;
+    if (jenis.contains('Medis') || jenis.contains('Kesehatan'))
+      return Icons.local_hospital_rounded;
+    return Icons.volunteer_activism_rounded;
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Semantics(
       button: onTap != null,
-      label: 'Pendampingan ${pendampingan.jenisBantuan}, status ${pendampingan.status}',
-      child: Card(
-        elevation: 1,
-        margin: const EdgeInsets.symmetric(vertical: 6),
+      label:
+          'Pendampingan ${pendampingan.jenisBantuan}, status ${pendampingan.status}',
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFEEEEEE)),
+        ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE1F5EE),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        _jenisBantuanIcon(pendampingan.jenisBantuan),
+                        size: 18,
+                        color: _primaryColor,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         pendampingan.jenisBantuan,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A1A1A),
                         ),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: _statusColor(context, pendampingan.status).withValues(alpha: 0.15),
+                        color: _statusBgColor(pendampingan.status),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         pendampingan.status,
                         style: TextStyle(
-                          color: _statusColor(context, pendampingan.status),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
+                          color: _statusColor(pendampingan.status),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 11,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  pendampingan.deskripsi,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
+                if (pendampingan.deskripsi.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    pendampingan.deskripsi,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF555555),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 10),
+                const Divider(height: 1, color: Color(0xFFF0F0F0)),
+                const SizedBox(height: 10),
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, size: 16, color: theme.colorScheme.primary),
+                    const Icon(
+                      Icons.calendar_today_rounded,
+                      size: 13,
+                      color: _primaryColor,
+                    ),
                     const SizedBox(width: 4),
-                    Text(DateHelper.formatDisplayDate(pendampingan.tanggal)),
-                    const SizedBox(width: 12),
-                    Icon(Icons.access_time, size: 16, color: theme.colorScheme.primary),
+                    Text(
+                      DateHelper.formatDisplayDate(pendampingan.tanggal),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF555555),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 13,
+                      color: _primaryColor,
+                    ),
                     const SizedBox(width: 4),
-                    Text(pendampingan.waktu),
+                    Text(
+                      pendampingan.waktu,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF555555),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 16, color: theme.colorScheme.primary),
+                    const Icon(
+                      Icons.location_on_rounded,
+                      size: 13,
+                      color: _primaryColor,
+                    ),
                     const SizedBox(width: 4),
-                    Expanded(child: Text(pendampingan.lokasi)),
+                    Expanded(
+                      child: Text(
+                        pendampingan.lokasi,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF555555),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
                 if (trailing != null) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   trailing!,
                 ],
               ],
@@ -111,12 +192,14 @@ class PendampinganCard extends StatelessWidget {
 class ProfileAvatar extends StatelessWidget {
   final String? fotoPath;
   final double radius;
+  final String? initials;
   final IconData fallbackIcon;
 
   const ProfileAvatar({
     super.key,
     this.fotoPath,
     this.radius = 24,
+    this.initials,
     this.fallbackIcon = Icons.person,
   });
 
@@ -125,15 +208,27 @@ class ProfileAvatar extends StatelessWidget {
     if (fotoPath != null && fotoPath!.isNotEmpty) {
       final file = File(fotoPath!);
       if (file.existsSync()) {
-        return CircleAvatar(
-          radius: radius,
-          backgroundImage: FileImage(file),
-        );
+        return CircleAvatar(radius: radius, backgroundImage: FileImage(file));
       }
+    }
+    if (initials != null && initials!.isNotEmpty) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: const Color(0xFFE1F5EE),
+        child: Text(
+          initials!,
+          style: TextStyle(
+            fontSize: radius * 0.55,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0F6E56),
+          ),
+        ),
+      );
     }
     return CircleAvatar(
       radius: radius,
-      child: Icon(fallbackIcon, size: radius),
+      backgroundColor: const Color(0xFFE1F5EE),
+      child: Icon(fallbackIcon, size: radius, color: const Color(0xFF0F6E56)),
     );
   }
 }

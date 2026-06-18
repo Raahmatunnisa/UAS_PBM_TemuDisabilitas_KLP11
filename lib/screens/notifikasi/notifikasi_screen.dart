@@ -34,32 +34,32 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
       body: provider.isLoading
           ? const LoadingWidget()
           : provider.notifikasiList.isEmpty
-              ? RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView(
-                    children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.5,
-                        child: const Center(child: Text('Belum ada notifikasi')),
-                      ),
-                    ],
+          ? RefreshIndicator(
+              onRefresh: _load,
+              child: ListView(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    child: const Center(child: Text('Belum ada notifikasi')),
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: provider.notifikasiList.length,
-                    itemBuilder: (_, index) {
-                      final n = provider.notifikasiList[index];
-                      return NotifikasiCard(
-                        notifikasi: n,
-                        onTap: () => provider.markAsRead(n.id!, userId),
-                        onDelete: () => provider.deleteNotifikasi(n.id!, userId),
-                      );
-                    },
-                  ),
-                ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: provider.notifikasiList.length,
+                itemBuilder: (_, index) {
+                  final n = provider.notifikasiList[index];
+                  return NotifikasiCard(
+                    notifikasi: n,
+                    onTap: () => provider.markAsRead(n.id!, userId),
+                    onDelete: () => provider.deleteNotifikasi(n.id!, userId),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

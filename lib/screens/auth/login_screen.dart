@@ -19,6 +19,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  static const _primaryColor = Color(0xFF0F6E56);
+  static const _primaryLight = Color(0xFFE1F5EE);
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -44,75 +47,205 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacementNamed(context, AppRoutes.relawanMain);
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error ?? 'Login gagal')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(auth.error ?? 'Login gagal')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final theme = Theme.of(context);
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 40),
-                Icon(Icons.accessibility_new, size: 72, color: theme.colorScheme.primary),
-                const SizedBox(height: 16),
-                Text(
-                  'Masuk ke TemuDisabilitas',
-                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
+      backgroundColor: const Color(0xFFF8FFFE),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Hero section
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0F6E56), Color(0xFF1D9E75)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Silakan masuk dengan akun Anda',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 32),
-                CustomTextField(
-                  controller: _emailController,
-                  label: 'Email',
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  validator: Validators.validateEmail,
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  obscureText: _obscurePassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        right: -20,
+                        top: -20,
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.07),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: -30,
+                        bottom: -10,
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.06),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      Column(
+                        children: const [
+                          Icon(
+                            Icons.volunteer_activism_rounded,
+                            size: 48,
+                            color: Colors.white,
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            'TemuDisabilitas',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Bersama kita bisa · Bersama kita inklusif',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white70,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  validator: Validators.validatePassword,
                 ),
-                const SizedBox(height: 24),
-                CustomButton(
-                  label: 'Masuk',
-                  isLoading: auth.isLoading,
-                  onPressed: _login,
-                  icon: Icons.login,
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.register),
-                  child: const Text('Belum punya akun? Daftar sekarang'),
-                ),
-              ],
+              ),
             ),
-          ),
+
+            // Form card
+            Transform.translate(
+              offset: const Offset(0, -20),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Masuk ke akun',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Silakan masuk dengan akun Anda',
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 24),
+                        CustomTextField(
+                          controller: _emailController,
+                          label: 'Email',
+                          keyboardType: TextInputType.emailAddress,
+                          prefixIcon: const Icon(
+                            Icons.email_outlined,
+                            color: _primaryColor,
+                          ),
+                          validator: Validators.validateEmail,
+                        ),
+                        const SizedBox(height: 14),
+                        CustomTextField(
+                          controller: _passwordController,
+                          label: 'Password',
+                          obscureText: _obscurePassword,
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            color: _primaryColor,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
+                          ),
+                          validator: Validators.validatePassword,
+                        ),
+                        const SizedBox(height: 24),
+                        CustomButton(
+                          label: 'Masuk',
+                          isLoading: auth.isLoading,
+                          onPressed: _login,
+                          icon: Icons.login_rounded,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Belum punya akun? ',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.pushNamed(
+                                context,
+                                AppRoutes.register,
+                              ),
+                              child: const Text(
+                                'Daftar sekarang',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: _primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

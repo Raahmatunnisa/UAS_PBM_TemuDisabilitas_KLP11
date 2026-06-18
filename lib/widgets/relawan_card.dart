@@ -6,27 +6,41 @@ class RelawanCard extends StatelessWidget {
   final RelawanWithRating data;
   final VoidCallback? onPilih;
 
-  const RelawanCard({
-    super.key,
-    required this.data,
-    this.onPilih,
-  });
+  const RelawanCard({super.key, required this.data, this.onPilih});
+
+  static const _primaryColor = Color(0xFF0F6E56);
+  static const _primaryLight = Color(0xFFE1F5EE);
+  static const _warmColor = Color(0xFFBA7517);
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final relawan = data.relawan;
+    final initials = relawan.nama
+        .trim()
+        .split(' ')
+        .take(2)
+        .map((e) => e[0].toUpperCase())
+        .join();
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEEEEEE)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                ProfileAvatar(fotoPath: relawan.fotoProfil, radius: 28),
+                ProfileAvatar(
+                  fotoPath: relawan.fotoProfil,
+                  radius: 24,
+                  initials: initials,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -34,16 +48,25 @@ class RelawanCard extends StatelessWidget {
                     children: [
                       Text(
                         relawan.nama,
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A1A1A),
+                        ),
                       ),
+                      const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 18),
-                          const SizedBox(width: 4),
+                          Icon(Icons.star_rounded, color: _warmColor, size: 14),
+                          const SizedBox(width: 3),
                           Text(
                             data.averageRating > 0
                                 ? '${data.averageRating.toStringAsFixed(1)} (${data.ratingCount} ulasan)'
                                 : 'Belum ada rating',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF555555),
+                            ),
                           ),
                         ],
                       ),
@@ -52,36 +75,91 @@ class RelawanCard extends StatelessWidget {
                 ),
               ],
             ),
+
             if (relawan.keahlian != null && relawan.keahlian!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 4,
-                children: [
-                  Icon(Icons.volunteer_activism, size: 16, color: theme.colorScheme.primary),
-                  Text(relawan.keahlian!, style: theme.textTheme.bodyMedium),
-                ],
-              ),
-            ],
-            if (relawan.deskripsiRelawan != null && relawan.deskripsiRelawan!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(relawan.deskripsiRelawan!, maxLines: 2, overflow: TextOverflow.ellipsis),
-            ],
-            if (relawan.jadwalKetersediaan != null && relawan.jadwalKetersediaan!.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
+              const Divider(height: 1, color: Color(0xFFF0F0F0)),
+              const SizedBox(height: 10),
               Row(
                 children: [
-                  Icon(Icons.schedule, size: 16, color: theme.colorScheme.secondary),
-                  const SizedBox(width: 4),
-                  Expanded(child: Text('Jadwal: ${relawan.jadwalKetersediaan}')),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: _primaryLight,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.volunteer_activism_rounded,
+                      size: 13,
+                      color: _primaryColor,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      relawan.keahlian!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF555555),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ],
+
+            if (relawan.deskripsiRelawan != null &&
+                relawan.deskripsiRelawan!.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                relawan.deskripsiRelawan!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 11, color: Color(0xFF888888)),
+              ),
+            ],
+
+            if (relawan.jadwalKetersediaan != null &&
+                relawan.jadwalKetersediaan!.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.schedule_rounded,
+                    size: 13,
+                    color: Color(0xFF185FA5),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      relawan.jadwalKetersediaan!,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF555555),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: onPilih,
-                child: const Text('Pilih Relawan'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: _primaryColor,
+                  minimumSize: const Size(double.infinity, 42),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Text(
+                  'Pilih Relawan Ini',
+                  style: TextStyle(fontSize: 13),
+                ),
               ),
             ),
           ],
