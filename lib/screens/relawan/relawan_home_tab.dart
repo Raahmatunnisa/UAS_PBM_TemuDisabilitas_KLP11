@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:temu_disabilitas/models/notifikasi_model.dart';
 import 'package:temu_disabilitas/models/pendampingan_model.dart';
 import 'package:temu_disabilitas/providers/auth_provider.dart';
+import 'package:temu_disabilitas/providers/notifikasi_provider.dart';
 import 'package:temu_disabilitas/providers/pendampingan_provider.dart';
 import 'package:temu_disabilitas/routes/app_routes.dart';
 import 'package:temu_disabilitas/widgets/loading_widget.dart';
@@ -19,8 +21,10 @@ class RelawanHomeTab extends StatefulWidget {
 class _RelawanHomeTabState extends State<RelawanHomeTab> {
   List<PendampinganModel> _pending = [];
   List<PendampinganModel> _upcoming = [];
+  List<NotifikasiModel> _notifikasi = [];
   int _totalSelesai = 0;
   double _avgRating = 0;
+  int _unreadCount = 0;
   bool _loading = true;
 
   static const _primaryColor = Color(0xFF0F6E56);
@@ -38,11 +42,16 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
   Future<void> _loadData() async {
     setState(() => _loading = true);
     final provider = context.read<PendampinganProvider>();
+    final notifikasiProvider = context.read<NotifikasiProvider>();
+
     _pending = await provider.getOpenRequests();
     await provider.loadUpcoming(widget.relawanId, isRelawan: true);
     _upcoming = provider.upcomingList;
     _totalSelesai = await provider.countCompleted(widget.relawanId);
     _avgRating = await provider.getAverageRating(widget.relawanId);
+    _notifikasi = await notifikasiProvider.loadLatest(widget.relawanId);
+    _unreadCount = _notifikasi.where((n) => n.sudahDibaca == 0).length;
+
     if (mounted) setState(() => _loading = false);
   }
 
@@ -64,6 +73,133 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
       );
       _loadData();
     }
+  }
+
+  void _showNotifikasiSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.4),
+      isScrollControlled: true,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.55,
+        minChildSize: 0.35,
+        maxChildSize: 0.85,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 16, 8),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.notifications_rounded,
+                      color: _primaryColor,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Notifikasi',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.notifikasi,
+                        ).then((_) => _loadData());
+                      },
+                      child: const Text(
+                        'Lihat semua',
+                        style: TextStyle(color: _primaryColor, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: _notifikasi.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Belum ada notifikasi',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : ListView.separated(
+                        controller: controller,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: _notifikasi.length,
+                        separatorBuilder: (_, __) =>
+                            const Divider(height: 1, indent: 56),
+                        itemBuilder: (_, i) {
+                          final n = _notifikasi[i];
+                          final isUnread = n.sudahDibaca == 0;
+                          return ListTile(
+                            leading: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: isUnread
+                                    ? _primaryLight
+                                    : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.notifications_rounded,
+                                size: 18,
+                                color: isUnread ? _primaryColor : Colors.grey,
+                              ),
+                            ),
+                            title: Text(
+                              n.judul,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isUnread
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            subtitle: Text(
+                              n.isi,
+                              style: const TextStyle(fontSize: 11),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.notifikasi,
+                              ).then((_) => _loadData());
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -104,13 +240,30 @@ class _RelawanHomeTabState extends State<RelawanHomeTab> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: Color(0xFF555555),
-            ),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.notifikasi),
-            tooltip: 'Notifikasi',
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.notifications_outlined,
+                  color: Color(0xFF555555),
+                ),
+                onPressed: _showNotifikasiSheet,
+                tooltip: 'Notifikasi',
+              ),
+              if (_unreadCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: _primaryColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.only(right: 12),
